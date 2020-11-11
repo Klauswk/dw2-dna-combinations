@@ -1,0 +1,1 @@
+angular.module("dw2DnaCombinations", []);
