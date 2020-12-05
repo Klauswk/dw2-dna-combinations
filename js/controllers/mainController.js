@@ -27,7 +27,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         var rookieRawArray = parseDataTable(rookieDnaChart);
 
         var rookieArray = rookieRawArray.map(row => {
-            return { name: row[0], stage: 1, cc: row[1] };
+            return { name: row[0], stage: 1, cc: row[1], digivolution: [] };
         });
 
         return rookieArray;
@@ -37,7 +37,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         var championRawArray = parseDataTable(championDnaChart);
 
         var championArray = championRawArray.map(row => {
-            return { name: row[0], stage: 2, cc: row[1], uc: row[2] };
+            return { name: row[0], stage: 2, cc: row[1], uc: row[2], digivolution: row.slice(3).filter(v => v !== "") };
         });
 
         return championArray;
@@ -47,7 +47,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         var ultimateRawArray = parseDataTable(ultimateDnaChart);
 
         var ultimateArray = ultimateRawArray.map(row => {
-            return { name: row[0], stage: 3, uc: row[1], mc: row[2] };
+            return { name: row[0], stage: 3, uc: row[1], mc: row[2], digivolution: row.slice(3).filter(v => v !== "") };
         });
 
         return ultimateArray;
@@ -57,7 +57,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         var megaRawArray = parseDataTable(megaDnaChart);
 
         var megaArray = megaRawArray.map(row => {
-            return { name: row[0], stage: 4, mc: row[1] };
+            return { name: row[0], stage: 4, mc: row[1], digivolution: row.slice(2).filter(v => v !== "") };
         });
 
         return megaArray;
@@ -191,9 +191,11 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
     }
 
     var searchDigimon = (digimon) => {
-        $scope.results = [];
+        $scope.result = {};
 
         var digimonByName = search(digimon);
+
+        console.log("DigimonByName: ", digimonByName);
 
         if (digimonByName) {
             if (digimonByName.stage === 1) {
@@ -203,7 +205,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.results = combinations;
+                $scope.result.combinations = combinations;
             }
 
             if (digimonByName.stage === 2) {
@@ -225,7 +227,8 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.results = combinations;
+                $scope.result.combinations = combinations;
+                $scope.result.digivolution = digimonByName.digivolution;
             }
 
             if (digimonByName.stage === 3) {
@@ -242,11 +245,13 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.results = combinations;
+                $scope.result.combinations = combinations;
+                $scope.result.digivolution = digimonByName.digivolution;
             }
 
             if (digimonByName.stage === 4) {
-                $scope.results = [{ first: { name: "Can't combine mega to get other mega" }, second: { name: "" } }];
+                $scope.result.digivolution = digimonByName.digivolution;
+                $scope.result.combinations = [{ first: { name: "Can't combine mega to get other mega" }, second: { name: "" } }];
             }
         }
     };
@@ -257,13 +262,33 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         }
     }
 
-    $scope.results = [];
+    var calculateEl = (elCalculator) => {
+        var highest, lowest;
 
-    $scope.digimon = { name: "", stage: "" };
+        if(elCalculator.elOne >= elCalculator.elTwo) {
+            highest = elCalculator.elOne;
+            lowest = elCalculator.elTwo;
+        } else {
+            highest = elCalculator.elTwo;
+            lowest = elCalculator.elOne;
+        }
+
+        elCalculator.result = Math.floor(highest + (lowest / 5));
+    }
+
+    $scope.result = {};
 
     $scope.searchDigimon = searchDigimon;
 
     $scope.checkForEnter = checkForEnter;
+
+    $scope.calculateEl = calculateEl;
+
+    $scope.elCalculator = {
+        elOne: 0,
+        elTwo: 0,
+        result: 0,
+    };
 
 });
 
@@ -366,158 +391,158 @@ Hagurumon|IG|
 Kunemon|IH|`
 
 var championDnaChart = 
-`Airdramon|B|AA|
-Akatorimon|H|DA|
-Bakemon|P|IA|
-Angemon|C|AB|
-Apemon|E|AC|
-Birdramon|B|AD|
-Dolphmon|D|AE|
-Flamedramon|B|AF|
-Frigimon|E|AG|
-Garurumon|E|AH|
-Gatomon|C|AI|
-Greymon|A|AJ|
-Gururumon|E|AK|
-Ikkakumon|D|AL|
-Kabuterimon|F|AM|
-Leomon|C|AN|
-Mojyamon|E|AO|
-Piddomon|C|AP|
-Saberdramon|B|AQ|
-ShimaUnimon|E|AR|
-Tortomon|D|AS|
-Unimon|E|AT|
-Veedramon|B|AU|
-Centarumon|K|DB|
-Clockmon|M|DC|
-Coelamon|J|DD|
-Drimogenmon|K|DE|
-Flarerizamon|G|DF|
-Icemon|K|DG|
-J-Mojyamon|K|DH|
-Kiwimon|H|DI|
-Kokatorimon|H|DJ|
-Meramon|M|DK|
-Monochromon|G|DL|
-MoriShellmon|J|DM|
-MudFrigimon|K|DN|
-Ninjamon|I|DO|
-N-Drimogemon|K|DP|
+`Airdramon|B|AA|Biyomon 0-2|
+Akatorimon|H|DA|Floramon 6+|Floramon 6+|
+Bakemon|P|IA|Tsukaimon 0-2|
+Angemon|C|AB|Patamon 8+|
+Apemon|E|AC|Tapirmon 8+|
+Birdramon|B|AD|Biyomon 8+|
+Dolphmon|D|AE|Penguinmon 3+|
+Flamedramon|B|AF|Veemon 4+|
+Frigimon|E|AG|SnowAgumon 0-2|
+Garurumon|E|AH|Tapirmon 6-7|Gabumon 8+|
+Gatomon|C|AI|ToyAgumon 3+|
+Greymon|A|AJ|Agumon 0+|
+Gururumon|E|AK|SnowAgumon 6+|
+Ikkakumon|D|AL|Gomamon 3+| Penguinmon 0-2|
+Kabuterimon|F|AM|Tentomon 0+|
+Leomon|C|AN|ToyAgumon 0-2|
+Mojyamon|E|AO|SnowAgumon 3-5|
+Piddomon|C|AP|ClearAgumon 3+|
+Saberdramon|B|AQ|Biyomon 6-7|
+ShimaUnimon|E|AR|Tapirmon 3-5|
+Tortomon|D|AS|Gomamon 0-2|
+Unimon|E|AT|Tapirmon 0-2|
+Veedramon|B|AU|Biyomon 3-5|Veemon 0-3|
+Centarumon|K|DB|Gabumon 0-2|
+Clockmon|M|DC|Candlemon 6+|
+Coelamon|J|DD|Crabmon 0-2|
+Drimogenmon|K|DE|Gabumon 3-5|
+Flarerizamon|G|DF|Elecmon 3-5|
+Icemon|K|DG|Gotsumon 0-2|
+J-Mojyamon|K|DH|Gotsumon 6+|
+Kiwimon|H|DI|Floramon 0-2|
+Kokatorimon|H|DJ|Floramon 3-5|
+Meramon|M|DK|Candlemon 3-5|
+Monochromon|G|DL|Elecmon 6+|
+MoriShellmon|J|DM|Crabmon 3-5|
+MudFrigimon|K|DN|Gotsumon 3-5|
+Ninjamon|I|DO|Patamon 0-2|
+N-Drimogemon|K|DP|Gabumon 6-7|
 SandYanmamon|L|DQ|
-Seadramon|J|DR|
-Shellmon|J|DS|
-Starmon|I|DT|
-Tankmon|M|DU|
-Togemon|N|DV|
-Tyrannomon|G|DW|
-Wizardmon|I|DX|
+Seadramon|J|DR|Crabmon 6+|
+Shellmon|J|DS|Crabmon 6-7|
+Starmon|I|DT|Patamon 3-5|
+Tankmon|M|DU|Candlemon 0-2|
+Togemon|N|DV|Palmon 0+|
+Tyrannomon|G|DW|Elecmon 0-2|
+Wizardmon|I|DX|Patamon 6-7|
 Yanmamon|L|DY|
-Cyclonemon|O|IB|
-Darkrizamon|O|IC|
-D-Tyrannomon|O|ID|
-Deltamon|O|IE|
-Devidramon|O|IF|
-Devimon|P|IG|
-Flymon|S|IH|
-Gekomon|Q|II|
-Gesomon|Q|IJ|
-Guardromon|T|IK|
-Hyogamon|R|IL|
-IceDevimon|P|IM|
-Kuwagamon|S|IN|
-Nanimon|P|IO|
-Numemon|T|IP|
-Octomon|Q|IQ|
-Ogremon|R|IR|
-P-Sukamon|T|IS|
-Raremon|T|IT|
-RedVegiemon|U|IU|
-Soulmon|P|IV|
-Sukamon|T|IW|
-Tuskmon|O|IX|
-Vegiemon|U|IY|
-Woodmon|U|IZ|`
+Cyclonemon|O|IB|Gizamon 0-2|
+Darkrizamon|O|IC|Betamon 3-5|
+D-Tyrannomon|O|ID|Betamon 0-2|
+Deltamon|O|IE|Gizamon 3-5|
+Devidramon|O|IF|Gizamon 6+|
+Devimon|P|IG|DemiDevimon 4+|
+Flymon|S|IH|Dokunemon 0+|
+Gekomon|Q|II|Otamamon 0-2|
+Gesomon|Q|IJ|Syakomon 3+|
+Guardromon|T|IK|Hagurumon 6+|
+Hyogamon|R|IL|SnowGoburimon 0+|
+IceDevimon|P|IM|DemiDevimon 0-3|
+Kuwagamon|S|IN|Kunemon 0+|
+Nanimon|P|IO|Gazimon 0+|
+Numemon|T|IP|Hagurumon 0+|
+Octomon|Q|IQ|Otamamon 3+|Syakomon 0-2|
+Ogremon|R|IR|Gaburimon 0+|
+P-Sukamon|T|IS|Hagurumon 2-3|
+Raremon|T|IT|Hagurumon 4-5|
+RedVegiemon|U|IU|Mushroomon 0|
+Soulmon|P|IV|Tsukaimon 3+|
+Sukamon|T|IW|Hagurumon 1|
+Tuskmon|O|IX|Betamon 6+|
+Vegiemon|U|IY|Mushroomon 1-3|
+Woodmon|U|IZ|Mushroomon 4+|`
 
 var ultimateDnaChart =
-`AeroVeedramon|A|AA|
-Andromon|B|AB|
-Angewomon|B|AC|
-Garudamon|A|AD|
-Giromon|B|AE|
-MagnaAngemon|B|AF|
-Mammothmon|C|AG|
-M-Tyrannomon|D|AH|
-M-Kabuterimon|E|AI|
-MetalGreymon|D|AJ|
-Monzaemon|C|AK|
-Panjyamon|B|AL|
-Raidramon|A|AM|
-WereGarurumon|C|AN|
-Whamon|F|AO|
-Zudomon|F|AP|
-Blossomon|G|DA|
-BlueMeramon|H|DB|
-Deramon|I|DC|
-Digitamamon|J|DD|
-Lillymon|G|DE|
-Mamemon|J|DF|
-MegaSeadramon|K|DG|
-MetalMamemon|J|DH|
-Meteormon|L|DI|
-Piximon|I|DJ|
-Pumpkinmon|G|DK|
-Scorpiomon|K|DL|
-SkullMeramon|H|DM|
-Tinmon|H|DN|
-Triceramon|M|DO|
-Vermillimon|M|DP|
-Cherrymon|N|IA|
-Datamon|O|IB|
+`AeroVeedramon|A|AA|Airdramon 0+|Flamedramon 0-5|Veedramon 0+|
+Andromon|B|AB|Angemon 0-5|
+Angewomon|B|AC|Gatomon 0+|
+Garudamon|A|AD|Birdramon 0+|Saberdramon 0+|
+Giromon|B|AE|Piddomon 6+|
+MagnaAngemon|B|AF|Angemon 6+|Piddomon 0-6|
+Mammothmon|C|AG|Apemon 0+|ShimaUnimon 0+|Unimon 0+|
+M-Tyrannomon|D|AH|Tyrannomon 8+|Greymon 6-8|
+M-Kabuterimon|E|AI|Kabuterimon 0+|
+MetalGreymon|D|AJ|Greymon 0-5|
+Monzaemon|C|AK|Frigimon 0+|Mojyamon 0+|
+Panjyamon|B|AL|Leomon 0+|
+Raidramon|A|AM|Flamedramon 6+|
+WereGarurumon|C|AN|Garurumon 0+|Gururumon 0+|
+Whamon|F|AO|Dolphmon 0+|Ikkakumon 0-5|
+Zudomon|F|AP|Ikkakumon 6+|Tortomon 0+|
+Blossomon|G|DA|Togemon 6-7|
+BlueMeramon|H|DB|Meramon 0-5|
+Deramon|I|DC|Kiwimon 0+|Kokatorimon 0-5|
+Digitamamon|J|DD|Starmon 8+|Wizardmon 0+|
+Lillymon|G|DE|Togemon 8+|
+Mamemon|J|DF|Ninjamon 0+|Starmon 0-5|
+MegaSeadramon|K|DG|Coelamon 0+|Seadramon 0+|
+MetalMamemon|J|DH|Starmon 6-7|
+Meteormon|L|DI|Centarumon 0+|Drimogemon 0+|Icemon 0+|J-Mojyamon 0+|MudFrigimon 0+|NiseDrimogemon 0+|
+Piximon|I|DJ|Akatorimon 0+|Kokatorimon 6+|
+Pumpkinmon|G|DK|Togemon 0-5|Yanmamon 0+|
+Scorpiomon|K|DL|Morishellmon 0+|Shellmon 0+|
+SkullMeramon|H|DM|Clockmon 8+|Meramon 6+|Tankmon 6+|
+Tinmon|H|DN|Clockmon 0-7|Tankmon 0-5|
+Triceramon|M|DO|Flarerizamon 0-5|Tyrannomon 0-7|
+Vermillimon|M|DP|Flareizamon 6+|Monochromon 0+|
+Cherrymon|N|IA|RedVegiemon 0+|Vegiemon 0+|Woodmon 0+|
+Datamon|O|IB|Guardromon 9+|
 Dragmon|P|IC|
-Etemon|Q|ID|
-Extyrannomon|R|IE|
-Garbagemon|O|IF|
-Gigadramon|R|IG|
-MarineDevimon|P|IH|
-Megadramon|R|II|
-MetalTyrannomon|R|IJ|
-Myotismon|S|IK|
-Okuwamon|T|IL|
-Phantomon|S|IM|
-ShogunGekomon|P|IN|
-SkullGreymon|R|IO|
-Tekkamon|S|IP|
-Vademon|O|IQ|
-WaruMonzaemon|Q|IR|
-WaruSeadramon|P|IS|`;
+Etemon|Q|ID|Ogremon 0+|
+Extyrannomon|R|IE|Darkrizamon 0+|DarkTyrannomon 0-5|
+Garbagemon|O|IF|Guardromon 6-8|Raremon 5+|
+Gigadramon|R|IG|Deltamon 6+|Devidramon 0+|
+MarineDevimon|P|IH|Gesomon 0-5|
+Megadramon|R|II|Cyclonemon 0+|Deltamon 0-5|
+MetalTyrannomon|R|IJ|DarkTyrannomon 6+|Tuskmon 0+|
+Myotismon|S|IK|Devimon 0+|IceDevimon 0+|
+Okuwamon|T|IL|Flymon 0+|Kuwagamon 0+|
+Phantomon|S|IM|Bakemon 0+|Soulmon 0+|
+ShogunGekomon|P|IN|Gekomon 0+|
+SkullGreymon|R|IO|Greymon 9+|
+Tekkamon|S|IP|Nanimon 0+|
+Vademon|O|IQ|Guardromon 0-5|P-Sukamon 0+|Raremon 0-4|
+WaruMonzaemon|Q|IR|Hyogamon 0+|
+WaruSeadramon|P|IS|Gesomon 6+|`;
 
 var megaDnaChart =
-`H-Kabuterimon|A|
-I-dramon|B|
-Jijimon|C|
-Magnadramon|D|
-MarineAngemon|E|
-Omnimon|F|
-Phoenixmon|B|
-Seraphimon|D|
-S-Mammothmon|C|
-WarGreymon|F|
-Baihumon|G|
-Boltmon|H|
-Gryphonmon|I|
+`H-Kabuterimon|A|M-Kabuterimon 0+|
+I-dramon|B|Raidramon 8+|
+Jijimon|C|Monzaemon 0+|
+Magnadramon|D|Angewomon 0+|Panjyamon 9|
+MarineAngemon|E|Whamon 0+|Zudomon 9+|
+Omnimon|F|MetalGreymon 20+|
+Phoenixmon|B|AeroVeedramon 0+|Garudamon 0+|Raidramon 0-7|
+Seraphimon|D|Andromon 0+|Giromon 0+|MagnaAngemon 0+|
+S-Mammothmon|C|Mammothmon 0+|WereGarurumon 0-7|
+WarGreymon|F|MasterTyrannomon 0+|WarGreymon 0-19|
+Baihumon|G|Meteormon 20+|
+Boltmon|H|BlueMeramon 0+|SkullMeramon 0+|Tinmon 0+|
+Gryphonmon|I|Deramon 0+|Piximon 0+|
 Kimeramon|H|
-M-Garurumon|G|
-M-Seadramon|J|
-Preciomon|J|
-P-Mamemon|K|
-Rosemon|L|
-SaberLeomon|K|
-Diaboromon|M|
-GranKuwagamon|M|
-Machinedramon|N|
-MetalEtemon|O|
+M-Garurumon|G|Meteormon 0-19|WereGarurumon 8+|
+M-Seadramon|J|MegaSeadramon 0+|
+Preciomon|J|Scorpiomon 0+|Zudomon 0-8|
+P-Mamemon|K|Mamemon 0+|MetalMamemon 0-8|
+Rosemon|L|Blossomon 0+|Lillymon 0+|Pumpkinmon 0+|
+SaberLeomon|K|Digitamamon 0+|MetalMamemon 9+|Panjyamon 0-8|
+Diaboromon|M|Okuwagamon 20+|
+GranKuwagamon|M|Okuwagamon 0-19|
+Machinedramon|N|SkullGreymon|
+MetalEtemon|O|Etemon 0+|WaruMonzaemon 0+| 
 Pierrotmon|P|
-Pukumon|Q|
-Puppetmon|R|
-VenomMyotismon|P|`
+Pukumon|Q|Dragomon 0+|MarineDevimon 0+|ShogumonGekomon 0+|WaruSeadramon 0+|
+Puppetmon|R|Cherrymon 0+|
+VenomMyotismon|P|Myostismon 0+|`

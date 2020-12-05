@@ -13,18 +13,30 @@
     <div class="container">
         <div class="center">
             <h2 class="display-4">Digimon World 2 DNA Combinations!</h2>
+            <form style="margin-top: 20px; margin-bottom: 20px;">
+                <h5 class="display-6">EL Calculator</h5>
+                <input class="form-control" type="number" placeholder="First Digimon EL" ng-model='elCalculator.elOne'>
+                <input class="form-control" type="number" placeholder="Second Digimon EL" ng-model='elCalculator.elTwo'>
+                <input class="btn btn-primary btn-block" type="submit" ng-click="calculateEl(elCalculator)" value="Calculate">
+                <span style="margin-top: 20px; margin-bottom: 20px;" ng-show="elCalculator.result > 0">New EL: {{elCalculator.result}}</span>
+            </form>
+
             <form>
+                <h5 class="display-6">Combinations</h5>
                 <input class="form-control" type="text" placeholder="Digimon Name" ng-model='digimon.name'
                     ng-keypress="checkForEnter($event)">
                 <input class="btn btn-primary btn-block" type="submit" ng-click="searchDigimon(digimon)" value="Search">
             </form>
 
-            <table id="content-table" ng-show="results.length > 0" class="table table-bordered table-hover">
+            <table id="content-table" ng-show="result.combinations.length > 0" class="table table-bordered table-hover">
                 <tr>
                     <th><a href="">Combinations</a></th>
                 </tr>
                 <tbody>
-                    <tr ng-repeat="result in results">
+                    <tr ng-repeat="result in result.digivolution">
+                        <td>{{result}}</td>
+                    </tr>
+                    <tr ng-repeat="result in result.combinations">
                         <td>{{result.first.name}} - {{result.second.name}}</td>
                     </tr>
                 </tbody>
