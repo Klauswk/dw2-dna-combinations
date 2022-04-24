@@ -35,7 +35,7 @@
                 <input class="btn btn-primary btn-block" type="submit" ng-click="searchResultingDigimon(resultingDigimon)" value="Search">
             </form>
 
-            <table id="content-table" ng-show="result.combinationsToGetDigimon.length > 0" class="table table-bordered table-hover">
+            <table id="content-table" ng-show="result.combinationsToGetDigimon.length > 0 || result.digivolution != null" class="table table-bordered table-hover">
                 <tr>
                     <th><a href="">Combinations</a></th>
                 </tr>
