@@ -21,14 +21,21 @@
                 <span style="margin-top: 20px; margin-bottom: 20px;" ng-show="elCalculator.result > 0">New EL: {{elCalculator.result}}</span>
             </form>
 
-            <form>
-                <h5 class="display-6">Combinations</h5>
-                <input class="form-control" type="text" placeholder="Digimon Name" ng-model='digimon.name'
-                    ng-keypress="checkForEnter($event)">
-                <input class="btn btn-primary btn-block" type="submit" ng-click="searchDigimon(digimon)" value="Search">
+            <form style="margin-top: 20px; margin-bottom: 20px;">
+                <h5 class="display-6">Combinations (to get Digimon)</h5>
+                <input class="form-control" type="text" placeholder="Desired Digimon Name" ng-model='targetDigimon.name'
+                       ng-keypress="checkForTargetDigimonEnter($event)">
+                <input class="btn btn-primary btn-block" type="submit" ng-click="searchTargetDigimon(targetDigimon)" value="Search">
             </form>
 
-            <table id="content-table" ng-show="result.combinations.length > 0" class="table table-bordered table-hover">
+            <form>
+                <h5 class="display-6">Combinations (available from Digimon)</h5>
+                <input class="form-control" type="text" placeholder="Parent Digimon Name" ng-model='resultingDigimon.name'
+                       ng-keypress="checkForResultingDigimonEnter($event)">
+                <input class="btn btn-primary btn-block" type="submit" ng-click="searchResultingDigimon(resultingDigimon)" value="Search">
+            </form>
+
+            <table id="content-table" ng-show="result.combinationsToGetDigimon.length > 0 || result.digivolution != null" class="table table-bordered table-hover">
                 <tr>
                     <th><a href="">Combinations</a></th>
                 </tr>
@@ -36,17 +43,42 @@
                     <tr ng-repeat="result in result.digivolution">
                         <td>{{result}}</td>
                     </tr>
-                    <tr ng-repeat="result in result.combinations">
+                    <tr ng-repeat="result in result.combinationsToGetDigimon">
                         <td>{{result.first.name}} - {{result.second.name}}</td>
                     </tr>
                 </tbody>
             </table>
 
-            <p>Thanks to Marshall Morris and Dogeci for the guide source to this: <a
-                    href="https://gamefaqs.gamespot.com/ps/437339-digimon-world-2/faqs/61067">link</a></p>
+            <table id="content-table" ng-show="result.combinationsFromDigimon.results.length > 0" class="table table-bordered table-hover">
+                <tr>
+                    <th><a href="">Combinations</a></th>
+                </tr>
+                <tbody>
+                <tr ng-repeat="availableCombinations in result.combinationsFromDigimon.results">
 
-            <p>The source for this site can be found in <a
-                href="https://github.com/Klauswk/dw2-dna-combinations">github</a></p>
+                    <td>
+                        <div>
+                            <h5>{{availableCombinations.childDigimon.name}}</h5>
+                            <div class="d-flex flex-wrap justify-content-center">
+                                <div ng-repeat="secondParent in availableCombinations.secondParents" class="btn-primary btn m-2 w-25  ">
+                                    {{result.combinationsFromDigimon.firstParent}} + {{secondParent.name}}
+                                </div>
+                            </div>
+                        </div>
+
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+
+            <p>
+                Thanks to Marshall Morris and Dogeci for the guide source to this: <a href="https://gamefaqs.gamespot.com/ps/437339-digimon-world-2/faqs/61067">link</a>
+            </p>
+
+            <p>
+                The source for this site can be found in <a href="https://github.com/Klauswk/dw2-dna-combinations">github</a>
+            </p>
         </div>
     </div>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>

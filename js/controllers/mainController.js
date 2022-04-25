@@ -74,6 +74,28 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         return 0;
     }
 
+    var sortByChildName = function (a, b) {
+        if (a.childDigimon.name < b.childDigimon.name) {
+            return -1;
+        }
+        if (a.childDigimon.name > b.childDigimon.name) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    var sortBySecondParentName = function (a, b) {
+        if (a.name < b.name) {
+            return -1;
+        }
+        if (a.name > b.name) {
+            return 1;
+        }
+
+        return 0;
+    }
+
     var ccDnaTable = loadCCDnaTable();
 
     var uuDnaTable = loadUUDnaTable();
@@ -176,6 +198,113 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         return arrayCombination;
     }
 
+    var findDigimonDataForRookieChildAndChampionParents = function(childDigimonAndSecondParentSet) {
+        var combinationsFromDigimon = [];
+        childDigimonAndSecondParentSet.forEach(otherParentAndChild => {
+            var resultingDigimon = null;
+            var secondParentsAsDigimonObjects = [];
+            rookieArray.forEach(possibleResultingDigimon => {
+                if (otherParentAndChild.childDigiID === possibleResultingDigimon.cc) {
+                    resultingDigimon = possibleResultingDigimon;
+                }
+            });
+            otherParentAndChild.secondParents.forEach(secondParent => {
+                championArray.forEach(possibleSecondParent => {
+                    if (secondParent === possibleSecondParent.cc) {
+                        secondParentsAsDigimonObjects.push(possibleSecondParent);
+                    }
+                });
+            });
+
+            secondParentsAsDigimonObjects.sort(sortBySecondParentName);
+
+            combinationsFromDigimon.push({
+                childDigimon: resultingDigimon,
+                secondParents: secondParentsAsDigimonObjects
+            });
+
+
+        });
+
+        return combinationsFromDigimon;
+    }
+
+    var findDigimonDataForChampionChildAndUltimateParents = function (childDigimonAndSecondParentSet) {
+        var combinationsFromDigimon = [];
+        childDigimonAndSecondParentSet.forEach(otherParentAndChild => {
+            var resultingDigimon = null;
+            var secondParentsAsDigimonObjects = [];
+            if (otherParentAndChild.childDigiID.charAt(0) === "M") {
+                if (otherParentAndChild.childDigiID === "MA") {
+                    resultingDigimon = search({ name: "Vademon" });
+                }
+            } else {
+                championArray.forEach(possibleResultingDigimon => {
+                    if (otherParentAndChild.childDigiID === possibleResultingDigimon.uc) {
+                        resultingDigimon = possibleResultingDigimon;
+                    }
+                });
+            }
+            
+            otherParentAndChild.secondParents.forEach(secondParent => {
+                ultimateArray.forEach(possibleSecondParent => {
+                    if (secondParent === possibleSecondParent.uc) {
+                        secondParentsAsDigimonObjects.push(possibleSecondParent);
+                    }
+                });
+            });
+
+            secondParentsAsDigimonObjects.sort(sortBySecondParentName);
+
+            combinationsFromDigimon.push({
+                childDigimon: resultingDigimon,
+                secondParents: secondParentsAsDigimonObjects
+            });
+
+
+        });
+
+        return combinationsFromDigimon;
+    }
+
+    var findDigimonDataForUltimateChildAndMegaParents = function (childDigimonAndSecondParentSet) {
+        var combinationsFromDigimon = [];
+        childDigimonAndSecondParentSet.forEach(otherParentAndChild => {
+            var resultingDigimon = null;
+            var secondParentsAsDigimonObjects = [];
+            if (otherParentAndChild.childDigiID.charAt(0) === "M") {
+                if (otherParentAndChild.childDigiID === "MB") {
+                    resultingDigimon = search({ name: "SandYanmamon" });
+                }
+                if (otherParentAndChild.childDigiID === "MC") {
+                    resultingDigimon = search({ name: "Yanmamon" });
+                }
+            } else {
+                ultimateArray.forEach(possibleResultingDigimon => {
+                    if (otherParentAndChild.childDigiID === possibleResultingDigimon.mc) {
+                        resultingDigimon = possibleResultingDigimon;
+                    }
+                });
+            }
+            otherParentAndChild.secondParents.forEach(secondParent => {
+                megaArray.forEach(possibleSecondParent => {
+                    if (secondParent === possibleSecondParent.mc) {
+                        secondParentsAsDigimonObjects.push(possibleSecondParent);
+                    }
+                });
+            });
+
+            secondParentsAsDigimonObjects.sort(sortBySecondParentName);
+
+            combinationsFromDigimon.push({
+                childDigimon: resultingDigimon,
+                secondParents: secondParentsAsDigimonObjects
+            });
+        });
+
+        return combinationsFromDigimon;
+    }
+
     var searchInTable = function (dnaTable, code) {
         var indexes = [];
 
@@ -190,7 +319,30 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         return indexes;
     }
 
-    var searchDigimon = (digimon) => {
+    var searchForDNAPartners = function (dnaTable, code) {
+        var dnaCombinations = [];
+        var codeAsColumnNum = code.charCodeAt(0) - 65;
+        console.log("Code:", code);
+        dnaTable[codeAsColumnNum].forEach((row, rowNumb) => {
+            var rowLetter = String.fromCharCode(65 + rowNumb);
+
+            //The dnaTable has an extra row for some reason, may look into it later.
+            if (row !== "") {
+                var entryInCombinations = dnaCombinations.find(k => k.childDigiID === row);
+                if (entryInCombinations === undefined || entryInCombinations === null) {
+                    dnaCombinations.push({ childDigiID: row, secondParents: [rowLetter] });
+                } else {
+                    entryInCombinations.secondParents.push(rowLetter);
+                }
+            }
+
+        });
+
+        return dnaCombinations;
+    }
+
+
+    var searchTargetDigimon = (digimon) => {
         $scope.result = {};
 
         var digimonByName = search(digimon);
@@ -205,7 +357,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.result.combinations = combinations;
+                $scope.result.combinationsToGetDigimon = combinations;
             }
 
             if (digimonByName.stage === 2) {
@@ -227,7 +379,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.result.combinations = combinations;
+                $scope.result.combinationsToGetDigimon = combinations;
                 $scope.result.digivolution = digimonByName.digivolution;
             }
 
@@ -245,20 +397,71 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
                 combinations.sort(sortByName);
 
-                $scope.result.combinations = combinations;
+                $scope.result.combinationsToGetDigimon = combinations;
                 $scope.result.digivolution = digimonByName.digivolution;
             }
 
             if (digimonByName.stage === 4) {
                 $scope.result.digivolution = digimonByName.digivolution;
-                $scope.result.combinations = [{ first: { name: "Can't combine mega to get other mega" }, second: { name: "" } }];
+                $scope.result.combinationsToGetDigimon = [{ first: { name: "Can't combine mega to get other mega" }, second: { name: "" } }];
             }
         }
     };
 
-    var checkForEnter = (event) => {
+    var searchResultingDigimon = (digimon) => {
+        $scope.result = {};
+
+        var digimonByName = search(digimon);
+        console.log("DigimonByName: ", digimonByName);
+        
+        var dnaTable;
+        var firstParentID;
+        var combinationsFromDigimon = null;
+
+        if (digimonByName.stage === 1) {
+            //Is Rookie, can't DNA Digivolve
+        }
+        else if (digimonByName.stage === 2) {
+            dnaTable = ccDnaTable;
+            firstParentID = digimonByName.cc;
+            var resultStage2 = searchForDNAPartners(dnaTable, firstParentID);
+
+            combinationsFromDigimon =
+                findDigimonDataForRookieChildAndChampionParents(resultStage2);
+        }
+        else if (digimonByName.stage === 3) {
+            dnaTable = uuDnaTable;
+            firstParentID = digimonByName.uc;
+            var resultStage3 = searchForDNAPartners(dnaTable, firstParentID);
+
+            combinationsFromDigimon =
+                findDigimonDataForChampionChildAndUltimateParents(resultStage3);
+        }
+        else if (digimonByName.stage === 4) {
+            dnaTable = mmDnaTable;
+            firstParentID = digimonByName.mc;
+            var resultStage4 = searchForDNAPartners(dnaTable, firstParentID);
+
+            combinationsFromDigimon =
+                findDigimonDataForUltimateChildAndMegaParents(resultStage4);
+
+        }
+
+        if (combinationsFromDigimon !== null && combinationsFromDigimon !== undefined) {
+            combinationsFromDigimon.sort(sortByChildName);
+            $scope.result.combinationsFromDigimon = { firstParent : digimon.name, results: combinationsFromDigimon};
+        }
+    }
+
+    var checkForTargetDigimonEnter = (event) => {
         if( event.keyCode == 13 || event.which == 13 ) {
-            searchDigimon($scope.digimon);
+            searchTargetDigimon($scope.targetDigimon);
+        }
+    }
+
+    var checkForResultingDigimonEnter = (event) => {
+        if (event.keyCode == 13 || event.which == 13) {
+            searchResultingDigimon($scope.resultingDigimon);
         }
     }
 
@@ -278,9 +481,13 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
     $scope.result = {};
 
-    $scope.searchDigimon = searchDigimon;
+    $scope.searchTargetDigimon = searchTargetDigimon;
 
-    $scope.checkForEnter = checkForEnter;
+    $scope.searchResultingDigimon = searchResultingDigimon;
+
+    $scope.checkForTargetDigimonEnter = checkForTargetDigimonEnter;
+
+    $scope.checkForResultingDigimonEnter = checkForResultingDigimonEnter;
 
     $scope.calculateEl = calculateEl;
 
