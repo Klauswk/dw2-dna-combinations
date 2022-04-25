@@ -325,7 +325,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
         console.log("Code:", code);
         dnaTable[codeAsColumnNum].forEach((row, rowNumb) => {
             var rowLetter = String.fromCharCode(65 + rowNumb);
-            console.log(rowLetter, row);
+
             //The dnaTable has an extra row for some reason, may look into it later.
             if (row !== "") {
                 var entryInCombinations = dnaCombinations.find(k => k.childDigiID === row);
@@ -362,7 +362,7 @@ angular.module("dw2DnaCombinations").controller("mainController", function ($sco
 
             if (digimonByName.stage === 2) {
                 var result = searchInTable(uuDnaTable, digimonByName.uc);
-                console.log("Result: ", result);
+
                 var combinations = findUUCombination(result);
 
                 if (digimonByName.name === "Yanmamon") {
